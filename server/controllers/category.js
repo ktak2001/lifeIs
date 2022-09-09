@@ -48,14 +48,16 @@ exports.update = async (req, res) => {
 		if (!image) {
 			return res.json(categoryQuery)
 		}
-		const deleteParams = {
-			Bucket: 'lifeisktak',
-			Key: `${updated.image.key}`
-		};
-		s3.deleteObject(deleteParams, function (err, data) {
-			if (err) console.log('S3 DELETE ERROR DURING UPDATE', err);
-			else console.log('S3 DELETED DURING UPDATE', data);
-		});
+		if (categoryQuery.image.url) {
+			const deleteParams = {
+				Bucket: 'lifeisktak',
+				Key: `${categoryQuery.image.key}`
+			};
+			s3.deleteObject(deleteParams, function (err, data) {
+				if (err) console.log('S3 DELETE ERROR DURING UPDATE', err);
+				else console.log('S3 DELETED DURING UPDATE', data);
+			});
+		}
 		const params = {
 			Bucket: 'lifeisktak',
 			Key: `category/${uuidv4()}.${type}`,
@@ -74,20 +76,15 @@ exports.update = async (req, res) => {
 	}
 }
 
-exports.content = (req, res) => {
+exports.content = async (req, res) => {
 	const { slug } = req.body
 	console.log("slug: ", slug)
-	Category.findOne({ slug })
-		.populate("lives")
-		.exec((err, data) => {
-			if (err) {
-				console.log(err.message)
-				return res.status(400).json({
-					error: err.message
-				})
-			}
-			return res.json(data)
-		})
+	try {
+		const categoryData = await Category.findOne({ slug }).populate("lives")
+		res.json({ categoryData })
+	} catch (err) {
+		throw new Error('category content error')
+	}
 }
 
 exports.read = (req, res) => {
@@ -106,27 +103,27 @@ exports.read = (req, res) => {
 
 exports.create = async (req, res) => {
 	const { name, image, content, lives } = req.body
-	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-	const type = image.split(';')[0].split('/')[1];
-
 	const slug = slugify(name + uuidv4())
 	let category = new Category({ name, content, slug, lives })
-
-	const params = {
-		Bucket: 'lifeisktak',
-		Key: `category/${uuidv4()}.${type}`,
-		Body: base64Data,
-		ACL: 'public-read',
-		ContentEncoding: 'base64',
-		ContentType: `image/${type}`
-	};
 	try {
-		const data = await s3.upload(params).promise()
-		category.image.url = data.Location
-		category.image.key = data.Key
+		if (image) {
+			const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+			const type = image.split(';')[0].split('/')[1];
+			const params = {
+				Bucket: 'lifeisktak',
+				Key: `category/${uuidv4()}.${type}`,
+				Body: base64Data,
+				ACL: 'public-read',
+				ContentEncoding: 'base64',
+				ContentType: `image/${type}`
+			};
+			const data = await s3.upload(params).promise()
+			category.image.url = data.Location
+			category.image.key = data.Key
+		}
 		category.postedBy = req.auth._id
 		const categoryData = await category.save()
-		const lifeDoc = await Life.find({ _id: lives }, {'$push': { categories: categoryData._id } }, {new: true})
+		const lifeDoc = await Life.updateMany({ _id: lives }, {'$push': { categories: categoryData._id } }, {new: true})
 		console.log('lifeDoc', lifeDoc)
 		res.json(categoryData)
 	} catch (err) {
@@ -139,13 +136,15 @@ exports.remove = async (req, res) => {
 	const { slug } = req.params
 	try {
 		const data = await Category.findOneAndDelete({ slug })
-		const deleteParams = {
-			Bucket: 'lifeisktak',
-			Key: `${data.image.key}`
+		if (data.image.key) {
+			const deleteParams = {
+				Bucket: 'lifeisktak',
+				Key: `${data.image.key}`
+			}
+			s3.deleteObject(deleteParams)
 		}
-		s3.deleteObject(deleteParams)
-		await User.findOneAndUpdate({ categories: { '$in': this._id }} , { '$pullAll': { categories : [this._id] }})
-		await Life.findOneAndUpdate({ categories: { '$in': this._id } }, { '$pullAll': { categories: [this._id] }})
+		await User.updateMany({ categories: { '$in': data._id }} , { '$pullAll': { categories : [data._id] }})
+		await Life.updateMany({ categories: { '$in': data._id } }, { '$pullAll': { categories: [data._id] }})
 		res.json({
 			success: 'successfuly deleted'
 		})

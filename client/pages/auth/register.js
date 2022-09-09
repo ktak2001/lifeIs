@@ -7,7 +7,6 @@ import { API } from '../../config';
 import { getCookie, isAuth } from '../../helpers/auth';
 
 const Register = ({user}) => {
-	const router = useRouter();
 	const [state, setState] = useState({
 		name: 'kazuki',
 		email: 'kazuki.tkh@gmail.com',
@@ -105,8 +104,10 @@ export async function getServerSideProps(ctx) {
 	try {
 		const { user } = await isAuth(token)
 		console.log('user', user)
-		if (user) {
-			router.push("/");
+		if (user !== null) {
+			ctx.res.writeHead(200, {
+				Location: '/'
+			})
 		}
 		return {
 			props: {

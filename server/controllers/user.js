@@ -1,6 +1,18 @@
 const User = require('../models/User')
 const Life = require('../models/life')
-const Category = require('../models/category')
+const Category = require('../models/category');
+const { v4: uuidv4 } = require('uuid');
+const AWS = require('aws-sdk');
+
+const s3 = new AWS.S3({
+	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+	region: process.env.AWS_REGION
+});
+
+exports.read = (req, res) => {
+	res.json({ user: req.profile })
+}
 
 exports.updatePassword = (req, res) => {
 	const { name, password } = req.body;
@@ -52,5 +64,82 @@ exports.updateUserLike = async (req, res) => {
 	} catch(err) {
 		console.log(err)
 		return res.status(400).json({ error: 'error in updateLifeLike' })
+	}
+}
+
+exports.update = async (req, res) => {
+	const { user, name, image, content, categories, slug } = req.body
+	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+	const type = image.split(';')[0].split('/')[1];
+	console.log('inside update')
+	
+	try {
+		if (user.slug !== slug && user.role !== 'admin') {
+			throw new Error('not permitted.')
+		}
+		const userQuery = await User.findOneAndUpdate({ slug }, { name, content, categories }, { new: true })
+		await Category.updateMany({ lives: { '$in': userQuery._id } }, { '$pullAll': { lives: [userQuery._id] } })
+		await Category.updateMany({ _id: categories }, { '$push': { lives: userQuery._id } })
+		if (!image) {
+			return res.json(userQuery)
+		}
+		if (userQuery.image.url) {
+			const deleteParams = {
+				Bucket: 'lifeisktak',
+				Key: `${updated.image.key}`
+			};
+			s3.deleteObject(deleteParams, function (err, data) {
+				if (err) console.log('S3 DELETE ERROR DURING UPDATE', err);
+				else console.log('S3 DELETED DURING UPDATE', data);
+			});
+		}
+		const params = {
+			Bucket: 'lifeisktak',
+			Key: `life/${uuidv4()}.${type}`,
+			Body: base64Data,
+			ACL: 'public-read',
+			ContentEncoding: 'base64',
+			ContentType: `image/${type}`
+		};
+		const s3Data = await s3.upload(params).promise()
+		userQuery.image.url = s3Data.Location;
+		userQuery.image.key = s3Data.Key;
+		await userQuery.save()
+		res.json(userQuery)
+	} catch (err) {
+		console.log(err)
+		res.status(400).json({ error: 'error' })
+	}
+}
+
+exports.remove = async (req, res) => {
+	const { slug } = req.params
+	const { user } = req.body
+	try {
+		if (user.admin !== 'admin' && user.slug !== slug) {
+			throw new Error('not permitted')
+		}
+		console.log('in remove')
+		const data = await User.findOneAndDelete({ slug })
+		console.log('data in remove', data)
+		if (data.image.key) {
+			const deleteParams = {
+				Bucket: 'lifeisktak',
+				Key: `${data.image.key}`
+			}
+			s3.deleteObject(deleteParams)
+		}
+		await User.updateMany({ livesILiked: { '$in': data._id } }, { '$pullAll': { livesILiked: [data._id] } })
+		await User.updateMany({ likedBy: { '$in': data._id } }, { '$pullAll': { likedBy: [data._id] } })
+		await Category.updateMany({ lives: { '$in': data._id } }, { '$pullAll': { lives: [data._id] } })
+		await Life.updateMany({ likedBy: { '$in': data._id } }, {'$pullAll': { likedBy: [data._id] }})
+		res.json({
+			success: 'successfuly deleted'
+		})
+	} catch (err) {
+		console.log('err removing', err)
+		res.status(400).json({
+			error: 'failed deleting'
+		})
 	}
 }

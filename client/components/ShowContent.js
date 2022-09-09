@@ -7,9 +7,10 @@ import parse from "html-react-parser"
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import Content from './Content'
 import { useRouter } from "next/router"
+import { IMAGE_ON_ERROR } from "../config"
 
 
-export default function ShowContent ({ user, data, isLife, list }) {
+export default function ShowContent ({ user, data, isLife }) {
 	const router = useRouter()
 	const handleListClick = slug => {
 		if (typeof window !== 'undefined') {
@@ -23,7 +24,7 @@ export default function ShowContent ({ user, data, isLife, list }) {
 				<Grid item xs={12} md={5} >
 					<Box
 						component='img'
-						src={data.image.url}
+						src={data.image.url || IMAGE_ON_ERROR}
 						sx={{
 							height: 300,
 							width: 'auto',

@@ -87,8 +87,10 @@ export async function getServerSideProps(ctx) {
 	const token = getCookie('token', ctx.req)
 	try {
 		const { user } = await isAuth(token)
-		if (user) {
-			Router.push('/');
+		if (user !== null) {
+			ctx.res.writeHead(200, {
+				Location: '/'
+			})
 		}
 		return {
 			props : {

@@ -42,22 +42,26 @@ const multiCategories = ({ user, isAdmin, selectedCategories, allLives }) => {
 }
 
 export async function getServerSideProps(ctx) {
-	const token = getCookie("token", ctx.req)
-	const { user, isAdmin } = await isAuth(token)
-	const onlyIdCategories = ctx.query.multiSlugs.split(',')
-	console.log('onlyIdCategories', onlyIdCategories)
-	const { data: { categories: fullDataCategories }} = await axios.post(`${API}/categories/getByIds`, {
-		categories: onlyIdCategories
-	})
-	const { data: { lives }} = await axios.get(`${API}/lives`)
-	// console.log('allLives', lives) //clear
-	return {
-		props: {
-			selectedCategories: fullDataCategories, // full data, not just ids
-			user,
-			isAdmin,
-			allLives: lives
+	const token = getCookie('token', ctx.req)
+	try {
+		const { user, isAdmin } = await isAuth(token)
+		const onlyIdCategories = ctx.query.multiSlugs.split(',')
+		console.log('onlyIdCategories', onlyIdCategories)
+		const { data: { categories: fullDataCategories }} = await axios.post(`${API}/categories/getByIds`, {
+			categories: onlyIdCategories
+		})
+		const { data: { lives }} = await axios.get(`${API}/lives`)
+		// console.log('allLives', lives) //clear
+		return {
+			props: {
+				selectedCategories: fullDataCategories, // full data, not just ids
+				user,
+				isAdmin,
+				allLives: lives
+			}
 		}
+	} catch (err) {
+		console.log(err)
 	}
 }
 

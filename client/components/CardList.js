@@ -3,8 +3,8 @@ import LifeCard from "./LifeCard"
 import { IMAGE_ON_ERROR } from "../config"
 
 const CardList = ({ user, list }) => {
-	console.log('user in cardlist', user)
-	console.log('list in cardlist', list)
+	// console.log('user in cardlist', user)
+	// console.log('list in cardlist', list)
 	// 
 	return (
 		// <Box sx={{ py: 3 }} >

@@ -72,7 +72,7 @@ exports.registerActivate = (req, res) => {
 				});
 			}
 			// register new user
-			const newUser = new User({ user_id, name, email, password, slug });
+			const newUser = new User({ user_id, name, email, password, slug, image: { key: '', url: '' }, content: '' });
 			console.log("newUser: ", newUser);
 			newUser.save((err, result) => {
 				if (err) {
@@ -126,17 +126,19 @@ exports.requireSignin = expressjwt({
 // the token is made in login func(in this file)
 // const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-exports.authMiddleware = async (req, res) => {
+exports.authMiddleware = async (req, res, next) => {
 	console.log("req in server:", req.auth._id)
 	const authUserId = req.auth._id;
 	try {
 		const user = await User.findOne({ _id: authUserId })
+		req.profile = user
 		if (user !== null) {
-			user.hashed_password = undefined;
-			user.salt = undefined;
+			req.profile.hashed_password = undefined;
+			req.profile.salt = undefined;
 		}
-		res.json({ user })
+		next()
 	} catch (err) {
+		console.log('err in authMiddleware', err)
 		throw err
 	}
 };

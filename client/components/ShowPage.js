@@ -9,10 +9,11 @@ import { useState } from "react";
 import { IMAGE_ON_ERROR } from "../config";
 import { Link } from "@mui/material";
 
-export default function ShowUserPage({ user, userData, similarLives }) {
+export default function ShowUserPage({ user, data, livesList }) {
 	const router = useRouter()
-	const [tabValue, setTabValue] = useState(0);
-	const isMe = user._id === userData._id
+	const [tabValue, setTabValue] = useState('content');
+	const isMe = user._id === data._id
+	const dataType = data.type
 
 	const handleListClick = slug => {
 		if (typeof window !== 'undefined') {
@@ -28,10 +29,10 @@ export default function ShowUserPage({ user, userData, similarLives }) {
 
 		return (
 			<div
-				role="tabpanel"
 				hidden={value !== tabValue}
-				id={`simple-tabpanel-${tabValue}`}
-				aria-labelledby={`simple-tab-${tabValue}`}
+				role="tabpanel"
+				id={`simple-tabpanel-${value}`}
+				aria-labelledby={`simple-tab-${value}`}
 			>
 				{value === tabValue && children}
 			</div>
@@ -50,7 +51,7 @@ export default function ShowUserPage({ user, userData, similarLives }) {
 				<Grid item xs={12} md={5} >
 					<Box
 						component='img'
-						src={userData.image !== undefined ? userData.image.url : IMAGE_ON_ERROR}
+						src={data.image !== undefined ? (data.image.url || IMAGE_ON_ERROR) : IMAGE_ON_ERROR}
 						sx={{
 							height: 300,
 							width: 'auto',
@@ -70,7 +71,7 @@ export default function ShowUserPage({ user, userData, similarLives }) {
 							m: 1
 						}}
 					>
-						{userData.categories.map(ct => (
+						{dataType !== 'category' && data.categories.map(ct => (
 							<Box>
 								<Chip
 									label={ct.name}
@@ -97,24 +98,36 @@ export default function ShowUserPage({ user, userData, similarLives }) {
 					<Box sx={{ width: '100%' }}>
 						<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
 							<Tabs value={tabValue} onChange={handlePageChange} aria-label="basic tabs example">
-								<Tab label="myContent" {...tabProps(0)} />
-								<Tab label="similarLives" {...tabProps(1)} />
-								<Tab label="livesILiked" {...tabProps(2)} />
-								<Tab label="likedBy" {...tabProps(3)} />
+								<Tab label="Content" {...tabProps(0)} value='content' />
+								<Tab label={dataType === 'category' ? 'Lives' : 'Similar Lives'} {...tabProps(1)} value='lives' />
+								{
+									dataType === 'user' && (<Tab label={`Lives ${data.name} liked`} {...tabProps(2)} value='livesUserLiked' />)
+								}
+								{
+									dataType !== 'category' && (<Tab label="likedBy" {...tabProps(3)} value='likedBy' />)
+								}
 							</Tabs>
 						</Box>
-						<TabPanel value={tabValue} tabValue={0}>
-							<Content user={user} data={userData} />
+						<TabPanel value={tabValue} tabValue='content'>
+							<Content user={user} data={data} />
 						</TabPanel>
-						<TabPanel value={tabValue} tabValue={1}>
-							<CardList list={similarLives} user={user} />
+						<TabPanel value={tabValue} tabValue='lives'>
+							<CardList list={livesList} user={user} />
 						</TabPanel>
-						<TabPanel value={tabValue} tabValue={2}>
-							<CardList list={userData.livesILiked} user={user} />
-						</TabPanel>
-						<TabPanel value={tabValue} tabValue={3}>
-							<CardList list={userData.likedBy} user={user} />
-						</TabPanel>
+						{
+							dataType === 'user' && (
+								<TabPanel value={tabValue} tabValue='livesUserLiked' >
+									<CardList list={data.livesILiked} user={user} />
+								</TabPanel>
+							)
+						}
+						{
+							dataType !== 'category' && (
+								<TabPanel value={tabValue} tabValue='likedBy' >
+									<CardList list={data.likedBy} user={user} />
+								</TabPanel>
+							)
+						}
 					</Box>
 				</Grid>
 			</Grid>

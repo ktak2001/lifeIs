@@ -69,18 +69,30 @@ export const authenticate = (response, next) => {
 // access user info from localstorage
 export async function isAuth(token) {
 	let isAdmin = false
-	const {data: {user}} = await axios.get(`${API}/auth`, {
-		headers: {
-			authorization: `Bearer ${token}`,
-			contentType: 'application/json'
+	if (token === undefined) {
+		console.log('inside undefined token')
+		return {
+			user: null,
+			isAdmin
 		}
-	})
-	if (user !== null) {
-		isAdmin = user.role === "admin"
 	}
-	return {
-		user,
-		isAdmin
+	try {
+		const {data: {user}} = await axios.get(`${API}/auth`, {
+			headers: {
+				authorization: `Bearer ${token}`,
+				contentType: 'application/json'
+			}
+		})
+		if (user !== null) {
+			isAdmin = user.role === "admin"
+		}
+		console.log('user, isAdmin', user, isAdmin)
+		return {
+			user,
+			isAdmin
+		}
+	} catch(err) {
+		throw new Error('error in isAuth')
 	}
 };
 

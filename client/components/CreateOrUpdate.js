@@ -14,6 +14,12 @@ import DialogButton from './DialogButton'
 
 const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 	const { lives, categories } = data
+	let dataType = ''
+	if (!isCreate) {
+		dataType = data.type
+	} else {
+		dataType = isLife ? 'life' : 'category'
+	}
 	// console.log("data", data)
 	const imageUrl = data.image !== undefined ? data.image.url : ""
 	const [states, setState] = useState({
@@ -29,7 +35,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 	const { name, error, success, buttonText, image } = states
 
 	useEffect(() => {
-		const chk = isLife ? categories : lives
+		const chk = dataType !== 'category' ? categories : lives
 		setList(chk !== undefined ? chk : [])
 	}, [])
 
@@ -62,7 +68,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 		setState({ ...states, buttonText: isCreate ? "Creating..." : "Updating..." })
 		let finalList = chosenList.map(el => el._id)
 		const routerUrl = API
-		routerUrl += isLife ? "/life" : "/category"
+		routerUrl += `/${dataType}`
 		routerUrl += isCreate ? "/create" : "/update"
 		const submitImage = image !== imageUrl ? image : ''
 		console.table({ name, submitImage, content, finalList, slug: data.slug })
@@ -70,7 +76,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 			const token = getCookieFromBrowser("token")
 			const res = await axios.post(
 				routerUrl,
-				{ name, content, image: submitImage, lives: finalList, categories: finalList, slug: data.slug },
+				{ user, name, content, image: submitImage, lives: finalList, categories: finalList, slug: data.slug },
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -90,7 +96,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 				setImageUploadButtonName("Upload Image")
 				setContent("")
 			} else {
-				setState({ ...states, success: `${res.data.name} is updated.`, buttonText: 'Update' })
+				setState({ ...states, success: `${res.data.name} is updated.`, buttonText: 'Update', error: '' })
 			}
 		} catch (error) {
 			console.log(error)
@@ -116,7 +122,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 				/>
 			</div>
 			<div className="pb-4">
-				<FilterData list={list} selectLife={!isLife} setList={setList} />
+				<FilterData list={list} selectLife={dataType === 'category'} setList={setList} />
 			</div>
 			<div className="pb-3" >
 				<label className="btn btn-outline-secondary form-label">
@@ -130,7 +136,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 			{
 				!isCreate && (
 					<div>
-						<DialogButton isLife={isLife} slug={data.slug} setError={setState} states={states} />
+						<DialogButton dataType={dataType} slug={data.slug} setError={setState} states={states} user={user} />
 					</div>
 
 				)
@@ -141,7 +147,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 	return (
 		<Layout user={user} >
 			<div className="col-md-8 offset-md-2 col-xs-10 offset-xs-1 p-5">
-				<h1>{isCreate ? "Create " : "Edit "}{isLife ? "Life" : "Category"}</h1>
+				<h1>{isCreate ? "Create " : "Edit "}{dataType}</h1>
 				<br />
 				{states.success && showSuccessMessage(states.success)}
 				{states.error && showErrorMessage(states.error)}

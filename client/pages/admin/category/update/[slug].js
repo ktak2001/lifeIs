@@ -3,11 +3,10 @@ import axios from "axios";
 import { API } from "../../../../config";
 import CreateOrUpdate from "../../../../components/CreateOrUpdate"
 
-const EditCategory = ({ data, list, user }) => <CreateOrUpdate data={data} list={list} isCreate={false} isLife={false} user={user} />
+const EditCategory = ({ categoryData, list, user }) => <CreateOrUpdate data={categoryData} list={list} isCreate={false} isLife={false} user={user} />
 
 export async function getServerSideProps(ctx) {
 	const token = getCookie("token", ctx.req)
-	console.log("ctx.query.slug", ctx.query.slug)
 	try {
 		const { user, isAdmin } = await isAuth(token)
 		if (!isAdmin) {
@@ -16,18 +15,18 @@ export async function getServerSideProps(ctx) {
 			})
 			ctx.res.end()
 		}
-		const { data } = await axios.post(`${API}/category/content`, {
+		const { data: {categoryData} } = await axios.post(`${API}/category/content`, {
 			slug: ctx.query.slug
 		})
 		const { data: { lives } } = await axios.get(`${API}/lives`)
 		// console.log("allLives", lives)
 		return {
 			props: {
-				user, isAdmin, data, list: lives
+				user, isAdmin, categoryData, list: lives
 			}
 		}
 	} catch (err) {
-		console.log(err)
+		console.log('err')
 	}
 }
 

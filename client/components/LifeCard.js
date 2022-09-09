@@ -2,8 +2,10 @@ import * as React from 'react';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { IconButton, Link, Typography, CardContent, CardCover, Card } from '@mui/joy';
 import { colors } from '@mui/material';
+import { IMAGE_ON_ERROR } from '../config';
 
 export default function LifeCard({ src, name, like, likedNumber, slug }) {
+	console.log('card src', src)
 	return (
 		<Card
 			sx={{
@@ -22,7 +24,7 @@ export default function LifeCard({ src, name, like, likedNumber, slug }) {
 		>
 			<CardCover>
 				<img
-					src={src}
+					src={src !== '' ? src : IMAGE_ON_ERROR}
 					alt={name}
 				/>
 			</CardCover>

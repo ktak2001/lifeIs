@@ -22,7 +22,6 @@ const Home = ({user, lives}) => {
 
 export async function getServerSideProps(ctx) {
 	const token = getCookie("token", ctx.req)
-	// console.log("token: ", token)
 	try {
 		const {user, isAdmin} = await isAuth(token)
 		const { data: {lives} } = await axios.get(`${API}/ranking`)
@@ -37,10 +36,10 @@ export async function getServerSideProps(ctx) {
 		}
 	} catch (err) {
 		console.log('errrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr', err)
-	}
-	return {
-		props: {
-			
+		return {
+			props: {
+				
+			}
 		}
 	}
 }

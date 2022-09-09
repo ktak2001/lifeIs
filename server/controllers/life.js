@@ -16,7 +16,7 @@ const s3 = new AWS.S3({
 });
 
 exports.filter = async(req, res, next) => {
-	const { categories, getSimilarLives } = req.body
+	const { categories, getSimilarLives, thisId } = req.body
 	const livesId = {}
 	const livesFullData = {}
 	let sortable = []
@@ -37,12 +37,6 @@ exports.filter = async(req, res, next) => {
 			const cat = await Category.findById(id).populate('lives')
 			console.log('cat', cat)
 			cat.lives.forEach(el => {
-				livesId[el.id] !== undefined ? livesId[el.id] += 1 : livesId[el.id] = 1
-				if (livesFullData[el.id] === undefined) {
-					livesFullData[el.id] = el
-				}
-			})
-			cat.users.forEach(el => {
 				livesId[el.id] !== undefined ? livesId[el.id] += 1 : livesId[el.id] = 1
 				if (livesFullData[el.id] === undefined) {
 					livesFullData[el.id] = el
@@ -74,6 +68,7 @@ exports.filter = async(req, res, next) => {
 
 exports.similarLives = async (req, res) => {
 	const { sortable, livesFullData } = res.locals
+	const { thisId } = req.body
 	try {
 		const lf = await Life.find({})
 		for (let idx = 0; sortable.length < 12 && idx < lf.length; idx++) {
@@ -89,8 +84,13 @@ exports.similarLives = async (req, res) => {
 			sortable[idx2] = tmp
 		})
 		const similarLives = sortable.map(el => livesFullData[el[0]._id])
-		console.log('similarLives', similarLives)
-		res.json({ similarLives })
+		// console.log('similarLives', similarLives)
+		const filteredSimilarLives = similarLives.filter(el => typeof el !== 'undefined' && el !== null)
+		const idx = filteredSimilarLives.findIndex(el => el._id === thisId)
+		if (idx > -1) {
+			filteredSimilarLives.splice(idx, 1)
+		}
+		res.json({ similarLives: filteredSimilarLives })
 	} catch (err) {
 		res.status(400).json({
 			error: 'error retrieving'
@@ -111,21 +111,15 @@ exports.readAll = (req, res) => {
 		})
 }
 
-exports.content = (req, res) => {
+exports.content = async (req, res) => {
 	const { slug } = req.body
-	console.log("slug: ", slug)
-	Life.findOne({ slug })
-		.populate("categories")
-		.exec((err, data) => {
-			if (err) {
-				console.log(err.message)
-				return res.status(400).json({
-					error: err.message
-				})
-			}
-			console.log("content data:", data)
-			res.json({life: data})
-		})
+	try {
+		const lifeData = await Life.findOne({ slug }).populate("categories")
+		res.json({ lifeData })
+	} catch (err) {
+		console.log(err)
+		throw new Error('err in life content')
+	}
 }
 
 exports.ranking = (req, res) => {
@@ -144,27 +138,27 @@ exports.ranking = (req, res) => {
 
 exports.create = async (req, res) => {
 	const { name, image, content, categories } = req.body
-	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
-	const type = image.split(';')[0].split('/')[1];
-
 	const slug = slugify(name + uuidv4())
 	let life = new Life({ name, content, slug, categories })
-
-	const params = {
-		Bucket: 'lifeisktak',
-		Key: `life/${uuidv4()}.${type}`,
-		Body: base64Data,
-		ACL: 'public-read',
-		ContentEncoding: 'base64',
-		ContentType: `image/${type}`
-	};
 	try {
-		const data = await s3.upload(params).promise()
-		life.image.url = data.Location
-		life.image.key = data.Key
+		if (image) {
+			const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+			const type = image.split(';')[0].split('/')[1];
+			const params = {
+				Bucket: 'lifeisktak',
+				Key: `life/${uuidv4()}.${type}`,
+				Body: base64Data,
+				ACL: 'public-read',
+				ContentEncoding: 'base64',
+				ContentType: `image/${type}`
+			};
+			const data = await s3.upload(params).promise()
+			life.image.url = data.Location
+			life.image.key = data.Key
+		}
 		life.postedBy = req.auth._id
 		const lifeData = await life.save()
-		const categoryDoc = await Category.find({ _id: lives }, { '$push': { lives: lifeData._id } }, { new: true })
+		const categoryDoc = await Category.updateMany({ _id: categories }, { '$push': { lives: lifeData._id } }, { new: true })
 		console.log('categoryDoc', categoryDoc)
 		res.json(lifeData)
 	} catch (err) {
@@ -185,14 +179,16 @@ exports.update = async (req, res) => {
 		if (!image) {
 			return res.json(lifeQuery)
 		}
-		const deleteParams = {
-			Bucket: 'lifeisktak',
-			Key: `${updated.image.key}`
-		};
-		s3.deleteObject(deleteParams, function (err, data) {
-			if (err) console.log('S3 DELETE ERROR DURING UPDATE', err);
-			else console.log('S3 DELETED DURING UPDATE', data);
-		});
+		if (lifeQuery.image.url) {
+			const deleteParams = {
+				Bucket: 'lifeisktak',
+				Key: `${lifeQuery.image.key}`
+			};
+			s3.deleteObject(deleteParams, function (err, data) {
+				if (err) console.log('S3 DELETE ERROR DURING UPDATE', err);
+				else console.log('S3 DELETED DURING UPDATE', data);
+			});
+		}
 		const params = {
 			Bucket: 'lifeisktak',
 			Key: `life/${uuidv4()}.${type}`,
@@ -215,13 +211,15 @@ exports.remove = async (req, res) => {
 	const { slug } = req.params
 	try {
 		const data = await Life.findOneAndDelete({ slug })
-		const deleteParams = {
-			Bucket: 'lifeisktak',
-			Key: `${data.image.key}`
+		if (data.image.key) {
+			const deleteParams = {
+				Bucket: 'lifeisktak',
+				Key: `${data.image.key}`
+			}
+			s3.deleteObject(deleteParams)
 		}
-		s3.deleteObject(deleteParams)
-		await User.findOneAndUpdate({ livesILiked: { '$in': this._id }} , { '$pullAll': { livesILiked : [this._id]}})
-		await Category.findOneAndUpdate({ lives: { '$in': this._id } }, { '$pullAll': { lives: [this._id] }})
+		await User.updateMany({ livesILiked: { '$in': data._id } }, { '$pullAll': { livesILiked: [data._id] } })
+		await Category.updateMany({ lives: { '$in': data._id } }, { '$pullAll': { lives: [data._id] } })
 		res.json({
 			success: 'successfuly deleted'
 		})

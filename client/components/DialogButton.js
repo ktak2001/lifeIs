@@ -3,9 +3,9 @@ import { Button, DialogActions, Dialog, DialogContent, DialogTitle, DialogConten
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import { API } from '../config';
-import { getCookieFromBrowser } from '../helpers/auth';
+import { getCookieFromBrowser, logout } from '../helpers/auth';
 
-export default function DialogButton({ isLife, slug, setError, states }) {
+export default function DialogButton({ dataType, slug, setError, states, user }) {
 	const router = useRouter()
 	const [open, setOpen] = useState(false);
 
@@ -19,18 +19,24 @@ export default function DialogButton({ isLife, slug, setError, states }) {
 
 	const handleButton = async () => {
 		const token = getCookieFromBrowser('token')
-		const { data: { success, error }} = await axios.delete(`${API}/${isLife ? 'life' : 'category'}/${slug}`, {
-			headers: {
-				Authorization: `Bearer ${token}`
+		try {
+			const { data: { success }} = await axios.delete(`${API}/${dataType}/${slug}`, {
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				data: {
+					user
+				}
+			})
+			if (dataType === 'user') {
+				logout()
 			}
-		})
-		if (success !== undefined) {
-			router.push({
+			router.push({   
 				pathname: '/',
 				query: { success }
 			})
-		} else {
-			setError({ ...states, error }	)
+		} catch (err) {
+			setError({ ...states, error: 'error deleting' })
 		}
 	}
 
@@ -46,7 +52,7 @@ export default function DialogButton({ isLife, slug, setError, states }) {
 				aria-describedby="alert-dialog-description"
 			>
 				<DialogTitle id="alert-dialog-title">
-					{`Are you sure you want to Delete this ${isLife ? 'Life' : 'Category'}?`}
+					{`Are you sure you want to Delete this ${dataType}?`}
 				</DialogTitle>
 				<DialogActions>
 					<Button onClick={handleClose}>Cancel</Button>

@@ -117,12 +117,4 @@ userSchema.methods = {
 	}
 }
 
-userSchema.pre('findOneAndDelete', { document: true, query: false }, async function(next) {
-	try {
-		await mongoose.model('Life').findOneAndDelete({ postedBy: this._id })
-	} catch (err) {
-		next(err) // https://mongoosejs.com/docs/middleware.html#post
-	}
-})
-
 module.exports = mongoose.models.User || mongoose.model("User", userSchema)
