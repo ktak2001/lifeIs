@@ -132,7 +132,7 @@ const Layout = ({ children, slug, user }) => {
 									) : (
 										<Autocomplete
 											onChange={(event, newValue) => {
-												console.log('newValue: ', newValue)
+												// console.log('newValue: ', newValue)
 												setLife(newValue)
 											}}
 											id="controllable-states-demo"

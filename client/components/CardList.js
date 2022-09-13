@@ -11,7 +11,6 @@ const CardList = ({ user, list }) => {
 		<Grid container spacing={2} sx={{ py: 3 }} item >
 			{
 				list !== undefined && list.length > 0 && list.map(el => {
-					console.log('el', el)
 					let href = 'category'
 					switch (el.type) {
 						case 'life':

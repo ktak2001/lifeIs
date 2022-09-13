@@ -9,11 +9,15 @@ import { useState } from "react";
 import { IMAGE_ON_ERROR } from "../config";
 import { Link } from "@mui/material";
 
-export default function ShowUserPage({ user, data, livesList }) {
+export default function ShowPage({ user, data, livesList }) {
 	const router = useRouter()
 	const [tabValue, setTabValue] = useState('content');
 	const isMe = user._id === data._id
 	const dataType = data.type
+	let listILiked = []
+	if (dataType === 'user') {
+		listILiked = data.usersILiked.concat(data.livesILiked)
+	}
 
 	const handleListClick = slug => {
 		if (typeof window !== 'undefined') {
@@ -25,7 +29,7 @@ export default function ShowUserPage({ user, data, livesList }) {
 	};
 	const TabPanel = (props) => {
 		const { children, value, tabValue } = props;
-		console.log(props.children)
+		// console.log(props.children)
 
 		return (
 			<div
@@ -117,7 +121,7 @@ export default function ShowUserPage({ user, data, livesList }) {
 						{
 							dataType === 'user' && (
 								<TabPanel value={tabValue} tabValue='livesUserLiked' >
-									<CardList list={data.livesILiked} user={user} />
+									<CardList list={listILiked} user={user} />
 								</TabPanel>
 							)
 						}

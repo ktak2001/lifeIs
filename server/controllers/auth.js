@@ -127,7 +127,7 @@ exports.requireSignin = expressjwt({
 // const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
 exports.authMiddleware = async (req, res, next) => {
-	console.log("req in server:", req.auth._id)
+	// console.log("req in server:", req.auth._id)
 	const authUserId = req.auth._id;
 	try {
 		const user = await User.findOne({ _id: authUserId })

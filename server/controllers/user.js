@@ -20,7 +20,6 @@ exports.updatePassword = (req, res) => {
 		case password && password.length < 6:
 			return res.status(400).json({ error: 'Password must be at least 6 characters long' });
 	}
-
 	User.findOneAndUpdate({ _id: req.user._id }, { name, password }, { new: true }).exec((err, updated) => {
 		if (err) {
 			return res.staus(400).json({
@@ -36,7 +35,8 @@ exports.updatePassword = (req, res) => {
 exports.content = async (req, res) => {
 	const { slug } = req.body
 	try {
-		const userQuery = await User.findOne({ slug }).populate('livesILiked').populate('likedBy').populate('categories')
+		const userQuery = await User.findOne({ slug }).populate('livesILiked').populate('likedBy').populate('categories').populate('usersILiked')
+		console.log('livesIliked', userQuery.livesILiked)
 		res.json({ user: userQuery })
 	} catch (err) {
 		console.log(err)
@@ -45,10 +45,10 @@ exports.content = async (req, res) => {
 }
 
 exports.updateLifeLike = async (req, res) => {
-	const { liked, id: lifeId } = req.body
+	const { liked, id } = req.body
 	try {
-		const userQuery = await User.updateOne({ _id: req.auth._id }, { [liked ? '$push': '$pullAll']: { livesILiked: (liked ? lifeId : [lifeId]) } }, { new: true })
-		await Life.findOneAndUpdate({ _id: lifeId }, { [liked ? '$push' : '$pullAll']: { likedBy: liked ? req.auth._id : [req.auth._id] }}, {new: true})
+		const userQuery = await User.updateOne({ _id: req.auth._id }, { [liked ? '$push': '$pullAll']: { livesILiked: (liked ? id : [id]) } }, { new: true })
+		await Life.findOneAndUpdate({ _id: id }, { [liked ? '$push' : '$pullAll']: { likedBy: liked ? req.auth._id : [req.auth._id] }}, {new: true})
 		return res.json(userQuery)
 	} catch (err) {
 		console.log(err)
@@ -59,8 +59,8 @@ exports.updateLifeLike = async (req, res) => {
 exports.updateUserLike = async (req, res) => {
 	const {liked, id: userId} = req.body
 	try {
-		await User.updateOne({ _id: req.auth._id }, { [liked ? '$push': '$pullAll']: { livesILiked: (liked ? userId : [userId]) } }, { new: true }) // me
-		await User.updateOne({ _id: userId }, { [liked ? '$push' : '$pullAll']: { likedMe: liked ? req.auth._id : [req.auth._id] }}, {new: true}) // the user
+		await User.updateOne({ _id: req.auth._id }, { [liked ? '$push': '$pullAll']: { usersILiked: (liked ? userId : [userId]) } }, { new: true }) // me
+		await User.updateOne({ _id: userId }, { [liked ? '$push' : '$pullAll']: { likedBy: liked ? req.auth._id : [req.auth._id] }}, {new: true}) // the user
 	} catch(err) {
 		console.log(err)
 		return res.status(400).json({ error: 'error in updateLifeLike' })
@@ -78,8 +78,8 @@ exports.update = async (req, res) => {
 			throw new Error('not permitted.')
 		}
 		const userQuery = await User.findOneAndUpdate({ slug }, { name, content, categories }, { new: true })
-		await Category.updateMany({ lives: { '$in': userQuery._id } }, { '$pullAll': { lives: [userQuery._id] } })
-		await Category.updateMany({ _id: categories }, { '$push': { lives: userQuery._id } })
+		await Category.updateOne({ users: userQuery._id }, { '$pullAll': { users: [userQuery._id] } })
+		await Category.updateMany({ _id: categories }, { '$push': { users: userQuery._id } })
 		if (!image) {
 			return res.json(userQuery)
 		}
@@ -129,9 +129,9 @@ exports.remove = async (req, res) => {
 			}
 			s3.deleteObject(deleteParams)
 		}
-		await User.updateMany({ livesILiked: { '$in': data._id } }, { '$pullAll': { livesILiked: [data._id] } })
+		await User.updateMany({ _id: data.likedBy }, { '$pullAll': { usersILiked: [data._id] } })
 		await User.updateMany({ likedBy: { '$in': data._id } }, { '$pullAll': { likedBy: [data._id] } })
-		await Category.updateMany({ lives: { '$in': data._id } }, { '$pullAll': { lives: [data._id] } })
+		await Category.updateMany({ _id: data.categories }, { '$pullAll': { users: [data._id] } })
 		await Life.updateMany({ likedBy: { '$in': data._id } }, {'$pullAll': { likedBy: [data._id] }})
 		res.json({
 			success: 'successfuly deleted'

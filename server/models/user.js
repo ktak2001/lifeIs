@@ -58,7 +58,15 @@ const userSchema = new mongoose.Schema({
 	livesILiked: [
 		{
 			type: ObjectId,
-			refPath: 'modelTypes'
+			required: true,
+			ref: 'Life'
+		}
+	],
+	usersILiked: [
+		{
+			type: ObjectId,
+			required: true,
+			ref: 'User'
 		}
 	],
 	likedBy: [
@@ -72,11 +80,7 @@ const userSchema = new mongoose.Schema({
 			type: ObjectId,
 			ref: "Category"
 		}
-	],
-	modelType: {
-		type: String,
-		enum: ['Life', 'User']
-	}
+	]
 })
 
 userSchema

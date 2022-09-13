@@ -32,14 +32,20 @@ const categorySchema = new mongoose.Schema(
 			type: ObjectId,
 			ref: 'User'
 		},
-		lives: [{
-			type: ObjectId,
-			refPath: 'modelTypes'
-		}],
-		modelTypes: {
-			type: String,
-			enum: ['User', 'Life']
-		}
+		lives: [
+			{
+				type: ObjectId,
+				required: true,
+				ref: 'Life'
+			}
+		],
+		users: [
+			{
+				type: ObjectId,
+				required: true,
+				ref: 'User'
+			}
+		],
 	},
 	{ timestamps: true }
 );

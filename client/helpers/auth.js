@@ -86,7 +86,7 @@ export async function isAuth(token) {
 		if (user !== null) {
 			isAdmin = user.role === "admin"
 		}
-		console.log('user, isAdmin', user, isAdmin)
+		// console.log('user, isAdmin', user, isAdmin)
 		return {
 			user,
 			isAdmin

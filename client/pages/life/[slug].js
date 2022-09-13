@@ -4,7 +4,6 @@ import { API, APP_NAME } from "../../config"
 import { isAuth } from "../../helpers/auth"
 import { Container, Grid, Box, IconButton, colors, Divider } from "@mui/material"
 import { getCookie, getCookieFromBrowser } from "../../helpers/auth"
-import ShowContent from '../../components/ShowContent'
 import Layout from "../../components/Layout"
 import ShowPage from "../../components/ShowPage"
 

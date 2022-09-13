@@ -40,7 +40,6 @@ exports.update = async (req, res) => {
 	const { name, image, content, lives, slug } = req.body
 	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
 	const type = image.split(';')[0].split('/')[1];
-
 	try {
 		const categoryQuery = await Category.findOneAndUpdate({ slug }, { name, content, lives }, { new: true })
 		await Life.updateMany({ categories: { '$in': categoryQuery._id } }, { '$pullAll': { categories: [categoryQuery._id] } })
@@ -80,7 +79,7 @@ exports.content = async (req, res) => {
 	const { slug } = req.body
 	console.log("slug: ", slug)
 	try {
-		const categoryData = await Category.findOne({ slug }).populate("lives")
+		const categoryData = await Category.findOne({ slug }).populate('lives').populate('users')
 		res.json({ categoryData })
 	} catch (err) {
 		throw new Error('category content error')

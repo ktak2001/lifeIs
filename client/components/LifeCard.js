@@ -5,7 +5,7 @@ import { colors } from '@mui/material';
 import { IMAGE_ON_ERROR } from '../config';
 
 export default function LifeCard({ src, name, like, likedNumber, slug }) {
-	console.log('card src', src)
+	// console.log('card src', src)
 	return (
 		<Card
 			sx={{

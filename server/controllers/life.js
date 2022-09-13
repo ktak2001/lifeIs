@@ -34,12 +34,18 @@ exports.filter = async(req, res, next) => {
 		}
 		for (let idx = 0; idx < categories.length; idx++) {
 			const id = categories[idx];
-			const cat = await Category.findById(id).populate('lives')
+			const cat = await Category.findById(id).populate('lives').populate('users')
 			console.log('cat', cat)
 			cat.lives.forEach(el => {
-				livesId[el.id] !== undefined ? livesId[el.id] += 1 : livesId[el.id] = 1
-				if (livesFullData[el.id] === undefined) {
-					livesFullData[el.id] = el
+				livesId[el._id] !== undefined ? livesId[el._id] += 1 : livesId[el._id] = 1
+				if (livesFullData[el._id] === undefined) {
+					livesFullData[el._id] = el
+				}
+			})
+			cat.users.forEach(el => {
+				livesId[el._id] !== undefined ? livesId[el._id] += 1 : livesId[el._id] = 1
+				if (livesFullData[el._id] === undefined) {
+					livesFullData[el._id] = el
 				}
 			})
 		}
@@ -55,7 +61,6 @@ exports.filter = async(req, res, next) => {
 		}
 		console.log('sortable2', sortable)
 		const filteredLives = sortable.map(el => livesFullData[el[0]])
-		console.log('livesFullData', livesFullData)
 		console.log('filteredLives', filteredLives)
 		res.json({ filteredLives })
 	} catch (err) {
@@ -83,7 +88,7 @@ exports.similarLives = async (req, res) => {
 			sortable[idx1] = sortable[idx2]
 			sortable[idx2] = tmp
 		})
-		const similarLives = sortable.map(el => livesFullData[el[0]._id])
+		const similarLives = sortable.map(el => livesFullData[el[0]])
 		// console.log('similarLives', similarLives)
 		const filteredSimilarLives = similarLives.filter(el => typeof el !== 'undefined' && el !== null)
 		const idx = filteredSimilarLives.findIndex(el => el._id === thisId)
@@ -114,7 +119,7 @@ exports.readAll = (req, res) => {
 exports.content = async (req, res) => {
 	const { slug } = req.body
 	try {
-		const lifeData = await Life.findOne({ slug }).populate("categories")
+		const lifeData = await Life.findOne({ slug }).populate("categories").populate('likedBy')
 		res.json({ lifeData })
 	} catch (err) {
 		console.log(err)
@@ -174,7 +179,7 @@ exports.update = async (req, res) => {
 
 	try {
 		const lifeQuery = await Life.findOneAndUpdate({ slug }, { name, content, categories }, { new: true })
-		await Category.updateMany({ lives: { '$in': lifeQuery._id } }, { '$pullAll': { lives: [lifeQuery._id] } })
+		await Category.updateMany({ lives: { '$in': lifeQuery._id } }, { '$pullAll': { lives: [lifeQuery._id]  } })
 		await Category.updateMany({ _id: categories }, { '$push': { lives: lifeQuery._id }})
 		if (!image) {
 			return res.json(lifeQuery)
@@ -211,6 +216,7 @@ exports.remove = async (req, res) => {
 	const { slug } = req.params
 	try {
 		const data = await Life.findOneAndDelete({ slug })
+		console.log('data returned when deleting life', data)
 		if (data.image.key) {
 			const deleteParams = {
 				Bucket: 'lifeisktak',
@@ -218,8 +224,8 @@ exports.remove = async (req, res) => {
 			}
 			s3.deleteObject(deleteParams)
 		}
-		await User.updateMany({ livesILiked: { '$in': data._id } }, { '$pullAll': { livesILiked: [data._id] } })
-		await Category.updateMany({ lives: { '$in': data._id } }, { '$pullAll': { lives: [data._id] } })
+		await User.updateMany({ _id: data.likedBy }, { '$pullAll': { livesILiked: [data._id] } })
+		await Category.updateMany({ _id: data.categories }, { '$pullAll': { lives: [data._id] } })
 		res.json({
 			success: 'successfuly deleted'
 		})
