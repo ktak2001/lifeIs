@@ -1,3 +1,6 @@
 node_modules
 .env
 package-lock.json
+../lifeis2.pem
+../lifeis3.pem
+../test1.js
