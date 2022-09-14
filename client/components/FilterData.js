@@ -2,16 +2,24 @@ import { Grid, Box, Card, CardContent, CardMedia, Typography, CardActionArea, Di
 import { useRouter } from 'next/router';
 import * as React from 'react';
 
-export default function FilterData({ list, selectLife, setList, defaultValues }) { // defaultValues: fulldata list, not just ids
+export default function FilterData({ list, selectLife, setValues, values }) { // defaultValues: fulldata list, not just ids
 	const router = useRouter()
 	const handleChipClick = slug => {
 		router.push(`${selectLife ? '/life' : '/category'}/${slug}`)
+	}
+	const handleOnChange = (e, v) => {
+		console.log('vales', v)
+		setValues(v)
+	}
+	const handleChipDelete = (id) => {
+		const newValues = values.filter(el => el._id !== id)
+		setValues(newValues)
 	}
 	return (
 		<Stack spacing={3} sx={{ width: 500 }}>
 			<Autocomplete
 				multiple
-				defaultValue={defaultValues || []}
+				value={values !== undefined ? values : []}
 				id="tags-outlined"
 				options={list}
 				getOptionLabel={(option) => option.name}
@@ -28,18 +36,15 @@ export default function FilterData({ list, selectLife, setList, defaultValues })
 						}}
 					/>
 				)}
-				onChange={(e, value) => {
-					console.log('value', value)
-					setList(value)
-				}}
+				onChange={handleOnChange}
 				renderTags={(tagValue, getTagProps) => {
-					console.log('getTagProps', getTagProps)
 					return tagValue.map((option, idx) => (
 						<Chip
-							{...getTagProps({ idx })}
+							// {...getTagProps({ idx })}
 							label={option.name}
 							sx={{ color: 'yellow' }}
 							onClick={() => handleChipClick(option.slug)}
+							onDelete={() => handleChipDelete(option._id)}
 							key={option._id}
 						/>
 					))

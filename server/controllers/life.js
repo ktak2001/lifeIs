@@ -17,6 +17,7 @@ const s3 = new AWS.S3({
 
 exports.filter = async(req, res, next) => {
 	const { categories, getSimilarLives, thisId } = req.body
+	res.locals.thisId = thisId
 	const livesId = {}
 	const livesFullData = {}
 	let sortable = []
@@ -35,7 +36,7 @@ exports.filter = async(req, res, next) => {
 		for (let idx = 0; idx < categories.length; idx++) {
 			const id = categories[idx];
 			const cat = await Category.findById(id).populate('lives').populate('users')
-			console.log('cat', cat)
+			// console.log('cat', cat)
 			cat.lives.forEach(el => {
 				livesId[el._id] !== undefined ? livesId[el._id] += 1 : livesId[el._id] = 1
 				if (livesFullData[el._id] === undefined) {
@@ -72,8 +73,7 @@ exports.filter = async(req, res, next) => {
 }
 
 exports.similarLives = async (req, res) => {
-	const { sortable, livesFullData } = res.locals
-	const { thisId } = req.body
+	const { sortable, livesFullData, thisId } = res.locals
 	try {
 		const lf = await Life.find({})
 		for (let idx = 0; sortable.length < 12 && idx < lf.length; idx++) {
@@ -90,8 +90,10 @@ exports.similarLives = async (req, res) => {
 		})
 		const similarLives = sortable.map(el => livesFullData[el[0]])
 		// console.log('similarLives', similarLives)
-		const filteredSimilarLives = similarLives.filter(el => typeof el !== 'undefined' && el !== null)
-		const idx = filteredSimilarLives.findIndex(el => el._id === thisId)
+		let filteredSimilarLives = similarLives.filter(el => typeof el !== 'undefined' && el !== null)
+		console.log('filteredSimilarLives', filteredSimilarLives.map(el => el._id))
+		const idx = filteredSimilarLives.findIndex(el => el._id.toString() === thisId)
+		console.log('idx', idx)
 		if (idx > -1) {
 			filteredSimilarLives.splice(idx, 1)
 		}
@@ -164,7 +166,7 @@ exports.create = async (req, res) => {
 		life.postedBy = req.auth._id
 		const lifeData = await life.save()
 		const categoryDoc = await Category.updateMany({ _id: categories }, { '$push': { lives: lifeData._id } }, { new: true })
-		console.log('categoryDoc', categoryDoc)
+		// console.log('categoryDoc', categoryDoc)
 		res.json(lifeData)
 	} catch (err) {
 		console.log(err)

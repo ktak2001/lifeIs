@@ -29,14 +29,16 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 		buttonText: isCreate ? 'Create' : 'Update',
 		image: imageUrl
 	})
-	const [chosenList, setList] = useState([])
+	const [values, setValues] = useState([])
 	const [content, setContent] = useState(data.content || '')
 	const [imageUploadButtonName, setImageUploadButtonName] = useState('Upload Image')
 	const { name, error, success, buttonText, image } = states
 
 	useEffect(() => {
 		const chk = dataType !== 'category' ? categories : lives
-		setList(chk !== undefined ? chk : [])
+		const mappedChk = chk.map(el => el._id)
+		const filtered = list.filter(el => mappedChk.includes(el._id))
+		setValues(filtered)
 	}, [])
 
 	const handleChange = name => e => {
@@ -66,7 +68,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 	const handleSubmit = async e => {
 		e.preventDefault()
 		setState({ ...states, buttonText: isCreate ? "Creating..." : "Updating..." })
-		let finalList = chosenList.map(el => el._id)
+		let finalList = values.map(el => el._id)
 		const routerUrl = API
 		routerUrl += `/${dataType}`
 		routerUrl += isCreate ? "/create" : "/update"
@@ -92,7 +94,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 					success: `${res.data.name} is created.`,
 					error: ''
 				})
-				setList([])
+				setValues([])
 				setImageUploadButtonName("Upload Image")
 				setContent("")
 			} else {
@@ -122,7 +124,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 				/>
 			</div>
 			<div className="pb-4">
-				<FilterData list={list} selectLife={dataType === 'category'} setList={setList} />
+				<FilterData list={list} selectLife={dataType === 'category'} setValues={setValues} values={values} />
 			</div>
 			<div className="pb-3" >
 				<label className="btn btn-outline-secondary form-label">

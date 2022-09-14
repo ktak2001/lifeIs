@@ -18,7 +18,7 @@ const CarouselView = ({ list }) => {
 							}}
 						/>
 						<Carousel.Caption>
-							<Typography href={`/life/${el.slug}`} level="h1" fontSize='2rem' mb={1} color={colors.blue[100]} >
+							<Typography href={`/life/${el.slug}`} level="h1" fontSize='2rem' mb={1} color={colors.grey[400]} >
 								{el.name}
 							</Typography>
 						</Carousel.Caption>

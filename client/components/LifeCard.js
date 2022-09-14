@@ -35,7 +35,7 @@ export default function LifeCard({ src, name, like, likedNumber, slug }) {
 				}}
 			/>
 			<CardContent sx={{ justifyContent: 'flex-end' }}>
-				<Typography level="h2" fontSize="lg" mb={1} textColor={colors.blue[100]}>
+				<Typography level="h2" fontSize="lg" mb={1} textColor={colors.grey[400]}>
 					{name}
 				</Typography>
 				<Typography startDecorator={like ? <Favorite /> : <FavoriteBorder />} textColor="neutral.300">

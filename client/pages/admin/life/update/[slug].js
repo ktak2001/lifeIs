@@ -21,7 +21,7 @@ export async function getServerSideProps(ctx) {
 		// console.log("allLives", categories)
 		return {
 			props: {
-				user, isAdmin, lifeData, list: categories
+				user, lifeData, list: categories
 			}
 		}
 	} catch (err) {

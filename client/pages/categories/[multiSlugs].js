@@ -24,19 +24,24 @@ const multiCategories = ({ user, onlyIdCategories, allLives, allCategories }) =>
 		const filtered = Object.keys(tmpLives).filter(id => tmpLives[id] === categories.length)
 		// console.log('filtered', filtered)
 		// console.log('allLives.map(el => el._id)', allLives.map(el => el._id))
-		const filteredFull = filtered.map(id => allLives[allLives.map(el => el._id).indexOf(id)])
+		let filteredFull = filtered.map(id => allLives[allLives.map(el => el._id).indexOf(id)])
 		console.log(filteredFull)
+		if (categories.length === 0) {
+			filteredFull = allLives
+		}
 		setLives(filteredFull)
 	}, [categories])
 
 	return (
-		<Layout user={user}>
+		<Layout user={user} inCategoriesPage={true} >
 			<Grid container direction='column' justifyContent='space-evenly' alignItems='center'>
 				<Grid item sx={{ pt: 6 }}>
-					<FilterData list={allCategories} selectLife={false} setList={setCategories} defaultValues={selectedCategories} />
+					<FilterData list={allCategories} selectLife={false} setValues={setCategories} values={categories} />
 				</Grid>
-				<Divider variant='middle' />
+				<Divider variant='middle'  sx={{ bgcolor: 'black' }} />
+				<Grid item sx={{ pt: 3, px: 5 }} container >
 				<CardList user={user} list={lives} />
+				</Grid>
 			</Grid>
 		</Layout>
 	)
@@ -46,11 +51,13 @@ export async function getServerSideProps(ctx) {
 	const token = getCookie('token', ctx.req)
 	try {
 		const { user, isAdmin } = await isAuth(token)
-		const onlyIdCategories = ctx.query.multiSlugs.split(',')
+		let onlyIdCategories = ctx.query.multiSlugs.split(',')
 		console.log('onlyIdCategories', onlyIdCategories)
+		if (onlyIdCategories[0] === 'notSelected') {
+			onlyIdCategories = []
+		}
 		const { data: { lives: allLives }} = await axios.get(`${API}/lives`)
 		const { data: { categories: allCategories }} = await axios.get(`${API}/categories`)
-		const selectedCategories = allCategories.filter(el => onlyIdCategories.includes(el._id))
 		return {
 			props: {
 				onlyIdCategories, // full data, not just ids

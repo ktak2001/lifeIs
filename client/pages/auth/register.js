@@ -8,9 +8,9 @@ import { getCookie, isAuth } from '../../helpers/auth';
 
 const Register = ({user}) => {
 	const [state, setState] = useState({
-		name: 'kazuki',
-		email: 'kazuki.tkh@gmail.com',
-		password: 'kkkkkk',
+		name: '',
+		email: '',
+		password: '',
 		error: '',
 		success: '',
 		buttonText: 'Register'
@@ -57,9 +57,10 @@ const Register = ({user}) => {
 					className="form-control"
 					placeholder="Type your name"
 					required
+					style={{ height: '3rem' }}
 				/>
 			</div>
-			<div className="form-group">
+			<div className="form-group" style={{ paddingTop: '1rem' }} >
 				<input
 					value={email}
 					onChange={handleChange('email')}
@@ -67,9 +68,10 @@ const Register = ({user}) => {
 					className="form-control"
 					placeholder="Type your email"
 					required
+					style={{ height: '3rem' }}
 				/>
 			</div>
-			<div className="form-group">
+			<div className="form-group" style={{ paddingTop: '1rem' }} >
 				<input
 					value={password}
 					onChange={handleChange('password')}
@@ -77,9 +79,10 @@ const Register = ({user}) => {
 					className="form-control"
 					placeholder="Type your password"
 					required
+					style={{ height: '3rem' }}
 				/>
 			</div>
-			<div className="form-group">
+			<div className="form-group" style={{ paddingTop: '2rem' }} >
 				<button className="btn btn-outline-warning">{buttonText}</button>
 			</div>
 		</form>
@@ -87,7 +90,7 @@ const Register = ({user}) => {
 
 	return (
 		<Layout user={user} >
-			<div className="col-md-6 offset-md-3">
+			<div className="col-sm-8 offset-sm-2 col-xs-10 offset-xs-1" style={{ paddingTop: '3rem' }} >
 				<h1>Register</h1>
 				<br />
 				{success && showSuccessMessage(success)}

@@ -15,14 +15,14 @@ Router.onRouteChangeStart = url => NProgress.start();
 Router.onRouteChangeComplete = url => NProgress.done();
 Router.onRouteChangeError = url => NProgress.done();
 
-const Layout = ({ children, slug, user }) => {
+const Layout = ({ children, slug, user, inCategoriesPage }) => {
 	const authed = user !== null
 	let isAdmin = false
 	if (user !== null) {
 		isAdmin = user.role === 'admin'
 	}
 
-	const [selectLife, setSelectLife] = useState(false)
+	const [selectLife, setSelectLife] = useState(inCategoriesPage !== undefined)
 	const [allCategories, setAllCategories] = useState([]) // full
 	const [allLives, setAllLives] = useState([]) //full
 	const [selectedLife, setLife] = useState('') // full
@@ -30,12 +30,18 @@ const Layout = ({ children, slug, user }) => {
 	const router = useRouter()
 	const handleCategorySubmit = e => {
 		e.preventDefault()
-		console.log(e)
-		console.log('selectedCategories', selectedCategories)
-		router.push({
-			pathname: '/categories/[multiSlugs]',
-			query: { multiSlugs: selectedCategories.map(el => el._id) }
-		})
+		if (selectedCategories.length === 0) {
+			router.push({
+				pathname: '/categories/[multiSlugs]',
+				query: { multiSlugs: 'notSelected' }
+			})
+		} else {
+			router.push({
+				pathname: '/categories/[multiSlugs]',
+				query: { multiSlugs: selectedCategories.map(el => el._id) }
+			})
+		}
+		// router.push('/categories/')
 	}
 	const handleLifeSubmit = e => {
 		e.preventDefault()
@@ -62,7 +68,7 @@ const Layout = ({ children, slug, user }) => {
 
 
 	return (
-		<div style={{ backgroundColor: colors.blue[50], minHeight: '100vh' }} className='flex-fill' >
+		<div style={{ backgroundColor: colors.cyan[50], minHeight: '100vh' }} className='flex-fill' >
 			<Navbar variant="dark" expand="lg" bg='dark' >
 				<Container fluid className='justify-content-between' >
 					<Navbar.Brand href="/">Life Is</Navbar.Brand>
@@ -121,7 +127,9 @@ const Layout = ({ children, slug, user }) => {
 										}}
 									>
 										<MenuItem value={'Life'}>Life</MenuItem>
-										<MenuItem value={'Category'}>Category</MenuItem>
+										{
+											inCategoriesPage === undefined && (<MenuItem value={'Category'}>Category</MenuItem>)
+										}
 									</Select>
 								</FormControl>
 							</Box>
@@ -129,7 +137,7 @@ const Layout = ({ children, slug, user }) => {
 								<div className='pe-2' >
 								{
 									!selectLife ? (
-									<FilterData list={allCategories} selectLife={false} setList={setCategories} />
+									<FilterData list={allCategories} selectLife={false} setValues={setCategories} values={selectedCategories} />
 									) : (
 										<Autocomplete
 											onChange={(event, newValue) => {
@@ -139,9 +147,14 @@ const Layout = ({ children, slug, user }) => {
 											id="controllable-states-demo"
 											options={allLives}
 											getOptionLabel={option => option.name}
-											sx={{ width: 300 }}
+											sx={{ width: 500 }}
 											renderInput={(params) => <TextField {...params} label="Select Life"
 											placeholder='Select Life'
+											color='primary'
+											sx={{
+												input: { color: 'white' },
+												label: { color: 'rgba(217, 217, 217, 0.4)' }
+											}}
 											/>}
 										/>
 									)

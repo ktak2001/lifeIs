@@ -123,7 +123,6 @@ exports.create = async (req, res) => {
 		category.postedBy = req.auth._id
 		const categoryData = await category.save()
 		const lifeDoc = await Life.updateMany({ _id: lives }, {'$push': { categories: categoryData._id } }, {new: true})
-		console.log('lifeDoc', lifeDoc)
 		res.json(categoryData)
 	} catch (err) {
 		console.log(err)

@@ -5,11 +5,12 @@ import axios from "axios"
 import { showSuccessMessage, showErrorMessage } from '../../helpers/alerts';
 import { API } from '../../config';
 import { authenticate, getCookie, getCookieFromBrowser, isAuth } from '../../helpers/auth';
+import { Grid } from "@mui/material";
 
 const Login = ({ user }) => {
 	const [state, setState] = useState({
-		email: 'kazuki.tkh@gmail.com',
-		password: 'kkkkkk',
+		email: '',
+		password: '',
 		error: '',
 		buttonText: 'Login'
 	})
@@ -53,9 +54,10 @@ const Login = ({ user }) => {
 					className="form-control"
 					placeholder="Type your email"
 					required
+					style={{ height: '3rem' }}
 				/>
 			</div>
-			<div className="form-group">
+			<div className="form-group" style={{ paddingTop: '1rem' }} >
 				<input
 					value={password}
 					onChange={handleChange('password')}
@@ -63,9 +65,10 @@ const Login = ({ user }) => {
 					className="form-control"
 					placeholder="Type your password"
 					required
+					style={{ height: '3rem' }}
 				/>
 			</div>
-			<div className="form-group">
+			<div className="form-group" style={{ paddingTop: '2rem' }} >
 				<button className="btn btn-outline-warning">{buttonText}</button>
 			</div>
 		</form>
@@ -73,7 +76,7 @@ const Login = ({ user }) => {
 
 	return (
 		<Layout user={user} >
-			<div className="col-md-6 offset-md-3">
+			<div className="col-sm-8 offset-sm-2 col-xs-10 offset-xs-1" style={{ paddingTop: '3rem' }} >
 				<h1>Login</h1>
 				<br />
 				{error && showErrorMessage(error)}
