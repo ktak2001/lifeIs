@@ -8,7 +8,8 @@ import CardList from "../../components/CardList"
 import Layout from '../../components/Layout'
 import { API } from "../../config"
 
-const multiCategories = ({ user, isAdmin, selectedCategories, allLives }) => {
+const multiCategories = ({ user, onlyIdCategories, allLives, allCategories }) => {
+	const selectedCategories = allCategories.filter(el => onlyIdCategories.includes(el._id))
 	const [lives, setLives] = useState([])
 	const [categories, setCategories] = useState(selectedCategories !== undefined ? selectedCategories : []) // full data
 	useEffect(() => {
@@ -19,20 +20,20 @@ const multiCategories = ({ user, isAdmin, selectedCategories, allLives }) => {
 				tmpLives[id] !== undefined ? tmpLives[id] += 1 : tmpLives[id] = 1
 			})
 		}
-		console.log('allLives', allLives)
+		// console.log('allLives', allLives)
 		const filtered = Object.keys(tmpLives).filter(id => tmpLives[id] === categories.length)
-		console.log('filtered', filtered)
-		console.log('allLives.map(el => el._id)', allLives.map(el => el._id))
+		// console.log('filtered', filtered)
+		// console.log('allLives.map(el => el._id)', allLives.map(el => el._id))
 		const filteredFull = filtered.map(id => allLives[allLives.map(el => el._id).indexOf(id)])
 		console.log(filteredFull)
 		setLives(filteredFull)
 	}, [categories])
 
 	return (
-		<Layout authed={user !== undefined} isAdmin={isAdmin}>
+		<Layout user={user}>
 			<Grid container direction='column' justifyContent='space-evenly' alignItems='center'>
 				<Grid item sx={{ pt: 6 }}>
-					<FilterData list={categories} selectLife={false} setList={setCategories} defaultValues={selectedCategories} />
+					<FilterData list={allCategories} selectLife={false} setList={setCategories} defaultValues={selectedCategories} />
 				</Grid>
 				<Divider variant='middle' />
 				<CardList user={user} list={lives} />
@@ -47,17 +48,15 @@ export async function getServerSideProps(ctx) {
 		const { user, isAdmin } = await isAuth(token)
 		const onlyIdCategories = ctx.query.multiSlugs.split(',')
 		console.log('onlyIdCategories', onlyIdCategories)
-		const { data: { categories: fullDataCategories }} = await axios.post(`${API}/categories/getByIds`, {
-			categories: onlyIdCategories
-		})
-		const { data: { lives }} = await axios.get(`${API}/lives`)
-		// console.log('allLives', lives) //clear
+		const { data: { lives: allLives }} = await axios.get(`${API}/lives`)
+		const { data: { categories: allCategories }} = await axios.get(`${API}/categories`)
+		const selectedCategories = allCategories.filter(el => onlyIdCategories.includes(el._id))
 		return {
 			props: {
-				selectedCategories: fullDataCategories, // full data, not just ids
+				onlyIdCategories, // full data, not just ids
 				user,
-				isAdmin,
-				allLives: lives
+				allLives,
+				allCategories
 			}
 		}
 	} catch (err) {

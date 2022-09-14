@@ -31,9 +31,10 @@ const Layout = ({ children, slug, user }) => {
 	const handleCategorySubmit = e => {
 		e.preventDefault()
 		console.log(e)
+		console.log('selectedCategories', selectedCategories)
 		router.push({
 			pathname: '/categories/[multiSlugs]',
-			query: { multiSlugs: selectedCategories }
+			query: { multiSlugs: selectedCategories.map(el => el._id) }
 		})
 	}
 	const handleLifeSubmit = e => {

@@ -12,7 +12,7 @@ import { Link } from "@mui/material";
 export default function ShowPage({ user, data, livesList }) {
 	const router = useRouter()
 	const [tabValue, setTabValue] = useState('content');
-	const isMe = user._id === data._id
+	const isMe = user !== null ? (user._id === data._id) : false
 	const dataType = data.type
 	let listILiked = []
 	if (dataType === 'user') {

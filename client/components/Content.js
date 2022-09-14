@@ -8,9 +8,9 @@ import axios from "axios";
 import { API } from "../config";
 
 export default function Content ({ user, data }) {
-	const [like, setLike] = useState(user.livesILiked.includes(data._id))
+	const [like, setLike] = useState(user !== null ? user.livesILiked.includes(data._id) : false)
 	const dataType = data.type
-	const isMe = user._id === data._id
+	const isMe = user !== null ? (user._id === data._id) : false
 
 	const handleLike = async e => {
 		console.log('event', e)
@@ -44,7 +44,7 @@ export default function Content ({ user, data }) {
 				</Box>
 				{parse(data.content || "")}
 
-				{dataType !== 'category' && !isMe && (<IconButton
+				{dataType !== 'category' && !isMe && user !== null && (<IconButton
 					aria-label={`Like ${data.name}`}
 					size="lg"
 					variant="solid"

@@ -24,7 +24,7 @@ const CardList = ({ user, list }) => {
 						<LifeCard
 							src={el.image !== undefined ? el.image.url : IMAGE_ON_ERROR}
 							name={el.name}
-							like={user.livesILiked.includes(el._id)}
+							like={user !== null ? user.livesILiked.includes(el._id) : false }
 							likedNumber={el.likedBy !== undefined ? el.likedBy.length : 0}
 							slug={`/${href}/${el.slug}`}
 							lifeId={el._id}
