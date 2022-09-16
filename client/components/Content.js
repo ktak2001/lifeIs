@@ -32,16 +32,8 @@ export default function Content ({ user, data }) {
 	}
 
 	return (
-		<Box sx={{ flexDirection: 'column' }}>
+		<Box sx={{ flexDirection: 'column', py: 5 }}>
 			<Box sx={{ width: 1 }} >
-				<Box
-					component="h1"
-					sx={{
-						py: 5
-					}}
-				>
-					{data.name}
-				</Box>
 				{parse(data.content || "")}
 
 				{dataType !== 'category' && !isMe && user !== null && (<IconButton

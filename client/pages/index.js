@@ -8,10 +8,11 @@ import { Box, Grid } from "@mui/material"
 import CarouselView from "../components/CarouselView"
 
 const Home = ({user, lives}) => {
+	const carouselLives = lives.slice(0, 7)
 	return (
 		<Layout user={user} >
 			{
-				lives !== undefined && lives.length > 0 && <CarouselView list={lives} />
+				lives !== undefined && lives.length > 0 && <CarouselView list={carouselLives} />
 			}
 			<Grid container sx={{ px: 5 }} >
 				<CardList user={user} list={lives} />
@@ -25,9 +26,9 @@ export async function getServerSideProps(ctx) {
 	try {
 		const {user, isAdmin} = await isAuth(token)
 		const { data: {lives} } = await axios.get(`${API}/ranking`)
-		console.log('user', user)
-		console.log('isAdmin', isAdmin)
-		console.log('data', lives)
+		// console.log('user', user)
+		// console.log('isAdmin', isAdmin)
+		// console.log('data', lives)
 		return {
 			props: {
 				user,

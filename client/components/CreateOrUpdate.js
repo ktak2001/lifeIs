@@ -24,6 +24,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 	const imageUrl = data.image !== undefined ? data.image.url : ""
 	const [states, setState] = useState({
 		name: data.name || "",
+		pronounce: data.pronounce !== undefined ? data.pronounce : '',
 		error: "",
 		success: "",
 		buttonText: isCreate ? 'Create' : 'Update',
@@ -32,17 +33,22 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 	const [values, setValues] = useState([])
 	const [content, setContent] = useState(data.content || '')
 	const [imageUploadButtonName, setImageUploadButtonName] = useState('Upload Image')
-	const { name, error, success, buttonText, image } = states
+	const { name, error, success, buttonText, image, pronounce } = states
 
 	useEffect(() => {
-		const chk = dataType !== 'category' ? categories : lives
-		const mappedChk = chk.map(el => el._id)
-		const filtered = list.filter(el => mappedChk.includes(el._id))
-		setValues(filtered)
+		if (!isCreate) {
+			const chk = dataType !== 'category' ? categories : lives
+			const mappedChk = chk.map(el => el._id)
+			const filtered = list.filter(el => mappedChk.includes(el._id))
+			setValues(filtered)
+		}
 	}, [])
 
-	const handleChange = name => e => {
-		setState({ ...states, [name]: e.target.value, error: "", success: "" })
+	const handleName = e => {
+		setState({ ...states, name: e.target.value })
+	}
+	const handlePronunciation = e => {
+		setState({ ...states, pronounce: e.target.value.toLowerCase() })
 	}
 	const handleContent = e => {
 		setContent(e)
@@ -78,7 +84,7 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 			const token = getCookieFromBrowser("token")
 			const res = await axios.post(
 				routerUrl,
-				{ user, name, content, image: submitImage, lives: finalList, categories: finalList, slug: data.slug },
+				{ user, name, content, image: submitImage, lives: finalList, categories: finalList, slug: data.slug, pronounce },
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -92,7 +98,8 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 					image: "",
 					buttonText: 'Create',
 					success: `${res.data.name} is created.`,
-					error: ''
+					error: '',
+					pronounce: ''
 				})
 				setValues([])
 				setImageUploadButtonName("Upload Image")
@@ -110,7 +117,11 @@ const CreateOrUpdate = ({ data, list, isCreate, isLife, user }) => {
 		<form onSubmit={handleSubmit}>
 			<div className='pb-3' >
 				<label className="form-label">Name</label>
-				<input onChange={handleChange("name")} value={states.name} type="text" className="form-control" required />
+				<input onChange={handleName} value={states.name} type="text" className="form-control" required />
+			</div>
+			<div className='pb-3' >
+				<label className="form-label">Pronunciation</label>
+				<input onChange={handlePronunciation} value={states.pronounce} type="text" className="form-control" required />
 			</div>
 			<div className="pb-3" >
 				<label className="form-label">Content</label>

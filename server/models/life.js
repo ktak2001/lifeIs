@@ -7,6 +7,13 @@ const lifeSchema = new mongoose.Schema(
 			type: String,
 			required: true
 		},
+		pronounce: {
+			type: String,
+			// required: true,
+			default: 'a',
+			max: 32,
+			trim: true
+		},
 		type: {
 			type: String,
 			default: 'life'

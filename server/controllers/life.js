@@ -91,9 +91,9 @@ exports.similarLives = async (req, res) => {
 		const similarLives = sortable.map(el => livesFullData[el[0]])
 		// console.log('similarLives', similarLives)
 		let filteredSimilarLives = similarLives.filter(el => typeof el !== 'undefined' && el !== null)
-		console.log('filteredSimilarLives', filteredSimilarLives.map(el => el._id))
+		// console.log('filteredSimilarLives', filteredSimilarLives.map(el => el._id))
 		const idx = filteredSimilarLives.findIndex(el => el._id.toString() === thisId)
-		console.log('idx', idx)
+		// console.log('idx', idx)
 		if (idx > -1) {
 			filteredSimilarLives.splice(idx, 1)
 		}
@@ -113,7 +113,7 @@ exports.readAll = (req, res) => {
 				console.log("err in finding Lives: ", err)
 				res.status(400).json({ error: "error retrieving Lives." })
 			} else {
-				res.json({ lives: lives !== undefined ? lives : [] })
+				res.json({ alllives: lives !== undefined ? lives : [] })
 			}
 		})
 }
@@ -144,9 +144,9 @@ exports.ranking = (req, res) => {
 };
 
 exports.create = async (req, res) => {
-	const { name, image, content, categories } = req.body
+	const { name, image, content, categories, pronounce } = req.body
 	const slug = slugify(name + uuidv4())
-	let life = new Life({ name, content, slug, categories })
+	let life = new Life({ name, content, slug, categories, pronounce })
 	try {
 		if (image) {
 			const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
@@ -175,12 +175,12 @@ exports.create = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
-	const { name, image, content, categories, slug } = req.body
+	const { name, image, content, categories, slug, pronounce } = req.body
 	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
 	const type = image.split(';')[0].split('/')[1];
 
 	try {
-		const lifeQuery = await Life.findOneAndUpdate({ slug }, { name, content, categories }, { new: true })
+		const lifeQuery = await Life.findOneAndUpdate({ slug }, { name, content, categories, pronounce }, { new: true })
 		await Category.updateMany({ lives: { '$in': lifeQuery._id } }, { '$pullAll': { lives: [lifeQuery._id]  } })
 		await Category.updateMany({ _id: categories }, { '$push': { lives: lifeQuery._id }})
 		if (!image) {

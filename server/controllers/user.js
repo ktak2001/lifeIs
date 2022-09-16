@@ -68,7 +68,7 @@ exports.updateUserLike = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
-	const { user, name, image, content, categories, slug } = req.body
+	const { user, name, image, content, categories, slug, pronounce } = req.body
 	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
 	const type = image.split(';')[0].split('/')[1];
 	console.log('inside update')
@@ -77,7 +77,7 @@ exports.update = async (req, res) => {
 		if (user.slug !== slug && user.role !== 'admin') {
 			throw new Error('not permitted.')
 		}
-		const userQuery = await User.findOneAndUpdate({ slug }, { name, content, categories }, { new: true })
+		const userQuery = await User.findOneAndUpdate({ slug }, { name, content, categories, pronounce }, { new: true })
 		await Category.updateOne({ users: userQuery._id }, { '$pullAll': { users: [userQuery._id] } })
 		await Category.updateMany({ _id: categories }, { '$push': { users: userQuery._id } })
 		if (!image) {

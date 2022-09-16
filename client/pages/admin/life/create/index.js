@@ -3,13 +3,13 @@ import axios from "axios";
 import { API } from "../../../../config";
 import CreateOrUpdate from "../../../../components/CreateOrUpdate"
 
-const CreateLife = ({ categories, user }) => <CreateOrUpdate data={{}} list={categories} isCreate={true} isLife={true} user={user} />
+const CreateLife = ({ allCategories, user }) => <CreateOrUpdate data={{}} list={allCategories} isCreate={true} isLife={true} user={user} />
 
 export async function getServerSideProps(ctx) {
 	const token = getCookie("token", ctx.req)
 	try {
 		const { user, isAdmin } = await isAuth(token)
-		const { data: { categories } } = await axios.get(`${API}/categories`)
+		const { data: { allCategories } } = await axios.get(`${API}/categories`)
 		if (!isAdmin) {
 			ctx.res.writeHead(302, {
 				Location: "/"
@@ -18,7 +18,7 @@ export async function getServerSideProps(ctx) {
 		}
 		return {
 			props: {
-				categories,
+				allCategories,
 				user
 			}
 		}

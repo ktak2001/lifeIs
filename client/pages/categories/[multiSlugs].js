@@ -34,7 +34,7 @@ const multiCategories = ({ user, onlyIdCategories, allLives, allCategories }) =>
 
 	return (
 		<Layout user={user} inCategoriesPage={true} >
-			<Grid container direction='column' justifyContent='space-evenly' alignItems='center'>
+			<Grid container direction='column' justifyContent='space-evenly' alignItems='center' key={user._id} >
 				<Grid item sx={{ pt: 6 }}>
 					<FilterData list={allCategories} selectLife={false} setValues={setCategories} values={categories} />
 				</Grid>
@@ -56,7 +56,7 @@ export async function getServerSideProps(ctx) {
 		if (onlyIdCategories[0] === 'notSelected') {
 			onlyIdCategories = []
 		}
-		const { data: { lives: allLives }} = await axios.get(`${API}/lives`)
+		const { data: { allLives }} = await axios.get(`${API}/lives`)
 		const { data: { categories: allCategories }} = await axios.get(`${API}/categories`)
 		return {
 			props: {

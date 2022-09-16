@@ -55,12 +55,12 @@ const Layout = ({ children, slug, user, inCategoriesPage }) => {
 		setSelectLife(e.target.value === 'Life' ? true : false)
 	}
 	const getCategories = async () => {
-		const { data: { categories } } = await axios.get(`${API}/categories`)
-		setAllCategories(categories)
+		const { data: { allCategories } } = await axios.get(`${API}/categories`)
+		setAllCategories(allCategories)
 	}
 	const getLives = async () => {
-		const { data: { lives } } = await axios.get(`${API}/lives`)
-		setAllLives(lives)
+		const { data: { allLives } } = await axios.get(`${API}/lives`)
+		setAllLives(allLives)
 	}
 	useEffect(() => {
 		getCategories(), getLives()

@@ -7,7 +7,14 @@ const categorySchema = new mongoose.Schema(
 			type: String,
 			trim: true,
 			required: true,
+			unique: true,
 			max: 32
+		},
+		pronounce: {
+			type: String,
+			default: 'a',
+			max: 32,
+			trim: true
 		},
 		type: {
 			type: String,

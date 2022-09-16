@@ -10,7 +10,7 @@ import ShowPage from "../../components/ShowPage"
 const Life = ({ user, lifeData, similarLives }) => {
 	return (
 		<Layout user={user} slug={`/admin/life/update/${lifeData.slug}`} >
-			<ShowPage user={user} data={lifeData} livesList={similarLives} />
+			<ShowPage user={user} data={lifeData} livesList={similarLives} key={lifeData._id} />
 		</Layout>
 	)
 }

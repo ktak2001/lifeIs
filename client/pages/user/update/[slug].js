@@ -3,9 +3,9 @@ import CreateOrUpdate from "../../../components/CreateOrUpdate";
 import { API } from "../../../config";
 import { isAuth, getCookie } from "../../../helpers/auth";
 
-const UpdateUser = ({ user, userData, similarLives }) => {
+const UpdateUser = ({ user, userData, allCategories }) => {
 	return (
-		<CreateOrUpdate data={userData} list={similarLives} isCreate={false} isLife={true} user={user} />
+		<CreateOrUpdate data={userData} list={allCategories} isCreate={false} isLife={true} user={user} />
 	)
 }
 
@@ -22,16 +22,10 @@ export async function getServerSideProps(ctx) {
 			})
 			ctx.res.end()
 		}
-		const categories = userData.categories.map(el => el._id)
-		console.log('categories', categories)
-		const { data: { similarLives } } = await axios.post(`${API}/similarLives`, {
-			categories: categories !== undefined ? categories : [],
-			getSimilarLives: true,
-			thisId: userData._id
-		})
+		const { data: { allCategories } } = await axios.get(`${API}/categories`)
 		return {
 			props: {
-				user, userData, similarLives
+				user, userData, allCategories
 			}
 		}
 	} catch (err) {

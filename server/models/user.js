@@ -14,6 +14,13 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		default: 'user'
 	},
+	pronounce: {
+		type: String,
+		// required: true,
+		default: 'a',
+		max: 32,
+		trim: true
+	},
 	content: {
 		type: {},
 		min: 20,

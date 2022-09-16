@@ -1,11 +1,16 @@
 import { Grid, Box, Card, CardContent, CardMedia, Typography, CardActionArea, Divider, Chip, Autocomplete, TextField, Stack, IconButton } from "@mui/material"
 import { useRouter } from 'next/router';
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 
 export default function FilterData({ list, selectLife, setValues, values }) { // defaultValues: fulldata list, not just ids
+	const [sortedList, setSortedList] = useState(list)
 	const router = useRouter()
+	useEffect(() => {
+		setSortedList(list.sort((a, b) => a.pronounce.localeCompare(b.pronounce)))
+	}, [])
 	const handleChipClick = slug => {
-		router.push(`${selectLife ? '/life' : '/category'}/${slug}`)
+		// router.push(`${selectLife ? '/life' : '/category'}/${slug}`) // real
+		router.push(`/admin${selectLife ? '/life' : '/category'}/update/${slug}`)
 	}
 	const handleOnChange = (e, v) => {
 		console.log('vales', v)
@@ -21,7 +26,8 @@ export default function FilterData({ list, selectLife, setValues, values }) { //
 				multiple
 				value={values !== undefined ? values : []}
 				id="tags-outlined"
-				options={list}
+				options={sortedList}
+				groupBy={option => (option.pronounce !== undefined ? option.pronounce[0] : 'a')}
 				getOptionLabel={(option) => option.name}
 				filterSelectedOptions
 				renderInput={(params) => (
@@ -31,7 +37,7 @@ export default function FilterData({ list, selectLife, setValues, values }) { //
 						placeholder={selectLife ? 'Lives' : 'Categories'}
 						color='primary'
 						sx={{
-							input: { color: 'white' },
+							// input: { color: 'white' },
 							label: { color: 'rgba(217, 217, 217, 0.4)' }
 						}}
 					/>

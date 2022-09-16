@@ -10,7 +10,7 @@ import ShowPage from "../../components/ShowPage"
 const Category = ({ user, categoryData }) => {
 	return (
 		<Layout user={user} slug={`/admin/category/update/${categoryData.slug}`} >
-			<ShowPage user={user} data={categoryData} livesList={categoryData.lives} />
+			<ShowPage user={user} data={categoryData} livesList={categoryData.lives} key={categoryData._id} />
 		</Layout>
 	)
 }

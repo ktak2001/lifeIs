@@ -8,6 +8,7 @@ import Content from "./Content";
 import { useState } from "react";
 import { IMAGE_ON_ERROR } from "../config";
 import { Link } from "@mui/material";
+import { logout } from "../helpers/auth";
 
 export default function ShowPage({ user, data, livesList }) {
 	const router = useRouter()
@@ -19,6 +20,10 @@ export default function ShowPage({ user, data, livesList }) {
 		listILiked = data.usersILiked.concat(data.livesILiked)
 	}
 
+	const handleLogOut = () => {
+		logout()
+		router.push('/')
+	}
 	const handleListClick = slug => {
 		if (typeof window !== 'undefined') {
 			router.push(`/category/${slug}`)
@@ -63,6 +68,34 @@ export default function ShowPage({ user, data, livesList }) {
 							borderRadius: '15%'
 						}}
 					/>
+					<Box
+						component="h1"
+						sx={{
+							py: 3
+						}}
+					>
+						{data.name}
+					</Box>
+					{
+						isMe && (
+							<Box>
+								<Button
+									variant='contained'
+									component={Link}
+									href={`/user/update/${user.slug}`}
+									sx={{ mx: 5 }}
+								>
+									Edit
+								</Button>
+								<Button
+									variant='contained'
+									onClick={handleLogOut}
+								>
+									Log Out
+								</Button>
+							</Box>
+						)
+					}
 				</Grid>
 				<Grid item xs={12} md={7}>
 					<Box
@@ -76,7 +109,7 @@ export default function ShowPage({ user, data, livesList }) {
 						}}
 					>
 						{dataType !== 'category' && data.categories.map(ct => (
-							<Box>
+							<Box key={ct._id} >
 								<Chip
 									label={ct.name}
 									onClick={() => handleListClick(ct.slug)}
@@ -84,19 +117,6 @@ export default function ShowPage({ user, data, livesList }) {
 							</Box>
 						))}
 					</Box>
-				</Grid>
-				<Grid item>
-					{
-						isMe && (
-							<Button
-								variant='contained'
-								component={Link}
-								href={`/user/update/${user.slug}`}
-							>
-								Edit
-							</Button>
-						)
-					}
 				</Grid>
 				<Grid item xs={12}>
 					<Box sx={{ width: '100%' }}>

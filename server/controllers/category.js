@@ -37,11 +37,11 @@ exports.containedLives = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
-	const { name, image, content, lives, slug } = req.body
+	const { name, image, content, lives, slug, pronounce } = req.body
 	const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
 	const type = image.split(';')[0].split('/')[1];
 	try {
-		const categoryQuery = await Category.findOneAndUpdate({ slug }, { name, content, lives }, { new: true })
+		const categoryQuery = await Category.findOneAndUpdate({ slug }, { name, content, lives, pronounce }, { new: true })
 		await Life.updateMany({ categories: { '$in': categoryQuery._id } }, { '$pullAll': { categories: [categoryQuery._id] } })
 		await Life.updateMany({ _id: lives }, { '$push': { categories: categoryQuery._id } })
 		if (!image) {
@@ -86,7 +86,7 @@ exports.content = async (req, res) => {
 	}
 }
 
-exports.read = (req, res) => {
+exports.readAll = (req, res) => {
 	console.log("reading categories")
 	Category.find({})
 		.sort({ name: 1 })
@@ -95,15 +95,15 @@ exports.read = (req, res) => {
 				console.log("err in finding Categories: ", err)
 				res.status(400).json({ error: "error retrieving Category." })
 			} else {
-				res.json({ categories: categories !== undefined ? categories : [] })
+				res.json({ allCategories: categories !== undefined ? categories : [] })
 			}
 		})
 }
 
 exports.create = async (req, res) => {
-	const { name, image, content, lives } = req.body
+	const { name, image, content, lives, pronounce } = req.body
 	const slug = slugify(name + uuidv4())
-	let category = new Category({ name, content, slug, lives })
+	let category = new Category({ name, content, slug, lives, pronounce })
 	try {
 		if (image) {
 			const base64Data = new Buffer.from(image.replace(/^data:image\/\w+;base64,/, ''), 'base64');
