@@ -11,6 +11,7 @@ export default function FilterData({ list, selectLife, setValues, values }) { //
 	const handleChipClick = slug => {
 		// router.push(`${selectLife ? '/life' : '/category'}/${slug}`) // real
 		router.push(`/admin${selectLife ? '/life' : '/category'}/update/${slug}`)
+		// TODO
 	}
 	const handleOnChange = (e, v) => {
 		console.log('vales', v)

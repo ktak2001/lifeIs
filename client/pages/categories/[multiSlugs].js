@@ -57,7 +57,7 @@ export async function getServerSideProps(ctx) {
 			onlyIdCategories = []
 		}
 		const { data: { allLives }} = await axios.get(`${API}/lives`)
-		const { data: { categories: allCategories }} = await axios.get(`${API}/categories`)
+		const { data: { allCategories }} = await axios.get(`${API}/categories`)
 		return {
 			props: {
 				onlyIdCategories, // full data, not just ids

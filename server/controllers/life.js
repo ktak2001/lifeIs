@@ -113,7 +113,7 @@ exports.readAll = (req, res) => {
 				console.log("err in finding Lives: ", err)
 				res.status(400).json({ error: "error retrieving Lives." })
 			} else {
-				res.json({ alllives: lives !== undefined ? lives : [] })
+				res.json({ allLives: lives !== undefined ? lives : [] })
 			}
 		})
 }

@@ -25,7 +25,7 @@ const Layout = ({ children, slug, user, inCategoriesPage }) => {
 	const [selectLife, setSelectLife] = useState(inCategoriesPage !== undefined)
 	const [allCategories, setAllCategories] = useState([]) // full
 	const [allLives, setAllLives] = useState([]) //full
-	const [selectedLife, setLife] = useState('') // full
+	// const [selectedLife, setLife] = useState('') // full
 	const [selectedCategories, setCategories] = useState([]) // id
 	const router = useRouter()
 	const handleCategorySubmit = e => {
@@ -43,12 +43,13 @@ const Layout = ({ children, slug, user, inCategoriesPage }) => {
 		}
 		// router.push('/categories/')
 	}
-	const handleLifeSubmit = e => {
-		e.preventDefault()
-		console.log(e)
+	const handleLifeSubmit = (value) => {
+		// e.preventDefault()
 		router.push({
-			pathname: '/life/[slug]',
-			query: { slug: selectedLife.slug }
+			// pathname: '/life/[slug]', // real
+			pathname: '/admin/life/update/[slug]',
+			// TODO: devchange
+			query: { slug: value.slug }
 		})
 	}
 	const handleSelectLife = e => {
@@ -60,12 +61,11 @@ const Layout = ({ children, slug, user, inCategoriesPage }) => {
 	}
 	const getLives = async () => {
 		const { data: { allLives } } = await axios.get(`${API}/lives`)
-		setAllLives(allLives)
+		setAllLives(allLives.sort((a, b) => a.pronounce.localeCompare(b.pronounce)))
 	}
 	useEffect(() => {
 		getCategories(), getLives()
 	}, [])
-
 
 	return (
 		<div style={{ backgroundColor: colors.cyan[50], minHeight: '100vh' }} className='flex-fill' >
@@ -135,32 +135,34 @@ const Layout = ({ children, slug, user, inCategoriesPage }) => {
 							</Box>
 							<Form className='d-flex' onSubmit={selectLife ? handleLifeSubmit : handleCategorySubmit} >
 								<div className='pe-2' >
-								{
-									!selectLife ? (
-									<FilterData list={allCategories} selectLife={false} setValues={setCategories} values={selectedCategories} />
-									) : (
-										<Autocomplete
-											onChange={(event, newValue) => {
-												// console.log('newValue: ', newValue)
-												setLife(newValue)
-											}}
-											id="controllable-states-demo"
-											options={allLives}
-											getOptionLabel={option => option.name}
-											sx={{ width: 500 }}
-											renderInput={(params) => <TextField {...params} label="Select Life"
-											placeholder='Select Life'
-											color='primary'
-											sx={{
-												input: { color: 'white' },
-												label: { color: 'rgba(217, 217, 217, 0.4)' }
-											}}
-											/>}
-										/>
-									)
-								}
+									{
+										!selectLife ? (
+											<FilterData list={allCategories} selectLife={false} setValues={setCategories} values={selectedCategories} />
+										) : (
+											<Autocomplete
+												groupBy={option => option.pronounce[0]}
+												onChange={(event, newValue) => {
+													// console.log('newValue: ', newValue)
+													handleLifeSubmit(newValue)
+													// setLife(newValue)
+												}}
+												id="controllable-states-demo"
+												options={allLives}
+												getOptionLabel={option => option.name}
+												sx={{ width: 500 }}
+												renderInput={(params) => <TextField {...params} label="Select Life"
+													placeholder='Select Life'
+													color='primary'
+													sx={{
+														input: { color: 'white' },
+														label: { color: 'rgba(217, 217, 217, 0.4)' }
+													}}
+												/>}
+											/>
+										)
+									}
 								</div>
-								<Button variant='outline-success' type='submit'>Search</Button>
+								{/* <Button variant='outline-success' type='submit'>Search</Button> */}
 							</Form>
 						</Nav>
 					</Navbar.Collapse>
