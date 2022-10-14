@@ -9,9 +9,9 @@ export default function FilterData({ list, selectLife, setValues, values }) { //
 		setSortedList(list.sort((a, b) => a.pronounce.localeCompare(b.pronounce)))
 	}, [])
 	const handleChipClick = slug => {
-		// router.push(`${selectLife ? '/life' : '/category'}/${slug}`) // real
-		router.push(`/admin${selectLife ? '/life' : '/category'}/update/${slug}`)
-		// TODO
+		router.push(`${selectLife ? '/life' : '/category'}/${slug}`) // real
+		// router.push(`/admin${selectLife ? '/life' : '/category'}/update/${slug}`)
+		// DEV
 	}
 	const handleOnChange = (e, v) => {
 		console.log('vales', v)
@@ -24,11 +24,12 @@ export default function FilterData({ list, selectLife, setValues, values }) { //
 	return (
 		<Stack spacing={3} sx={{ width: 500 }}>
 			<Autocomplete
+				disableCloseOnSelect
 				multiple
 				value={values !== undefined ? values : []}
 				id="tags-outlined"
 				options={sortedList}
-				groupBy={option => (option.pronounce !== undefined ? option.pronounce[0] : 'a')}
+				groupBy={option => option.pronounce[0]}
 				getOptionLabel={(option) => option.name}
 				filterSelectedOptions
 				renderInput={(params) => (

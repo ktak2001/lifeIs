@@ -5,7 +5,8 @@ const lifeSchema = new mongoose.Schema(
 	{
 		name: {
 			type: String,
-			required: true
+			required: true,
+			unique: true
 		},
 		pronounce: {
 			type: String,

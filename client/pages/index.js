@@ -48,3 +48,4 @@ export async function getServerSideProps(ctx) {
 export default Home;
 
 // memo: authmiddlewareで統一し、adminmiddlewareは後半部分だけを追加する感じ。/admin行って、req.headers.cookieあるか確認
+// MEMO ssh -i "lifeis3.pem" ubuntu@ec2-35-78-168-79.ap-northeast-1.compute.amazonaws.com

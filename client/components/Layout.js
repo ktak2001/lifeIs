@@ -46,9 +46,9 @@ const Layout = ({ children, slug, user, inCategoriesPage }) => {
 	const handleLifeSubmit = (value) => {
 		// e.preventDefault()
 		router.push({
-			// pathname: '/life/[slug]', // real
-			pathname: '/admin/life/update/[slug]',
-			// TODO: devchange
+			pathname: '/life/[slug]', // real
+			// pathname: '/admin/life/update/[slug]',
+			// DEV: devchange
 			query: { slug: value.slug }
 		})
 	}
