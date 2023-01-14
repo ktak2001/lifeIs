@@ -1,0 +1,14 @@
+version: '3.9'
+volumes:
+  lifeis_node_modules:
+services:
+  dev:
+    tty: true
+    image: node:19
+    entrypoint: scripts/entrypoint.sh
+    working_dir: /usr/src/app/
+    volumes:
+      - ./:/usr/src/app/
+      - excel_importer_node_modules:/usr/src/app/node_modules
+    ports: 
+      - 81:4000

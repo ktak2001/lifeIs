@@ -1,0 +1,1 @@
+alias loan-dev="docker-compose up dev"
